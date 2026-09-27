@@ -3,6 +3,7 @@ import { AlgorithmSettings } from '@/components/GeneticEngine/AlgorithmSettings'
 import { BenefitSettings } from '@/components/GeneticEngine/BenefitSettings';
 import { ConvergenceChart } from '@/components/GeneticEngine/ConvergenceChart';
 import { DynamicControls } from '@/components/GeneticEngine/DynamicControls';
+import { ExternalCrisisObserver } from '@/components/GeneticEngine/ExternalCrisisObserver';
 import { ResourceLock } from '@/components/GeneticEngine/ResourceLock';
 import { DistributionReportsViewer } from '@/components/Reports/DistributionReportsViewer';
 import { GlobalDraftPreview } from '@/components/Reports/GlobalDraftPreview';
@@ -156,6 +157,7 @@ const PeriodBreakdown = ({ periods }: { periods: Array<Record<string, unknown>> 
 
 export default function Home() {
   const [activeTemplate, setActiveTemplate] = useState<DynamicTemplate | null>(null);
+  const [availableTemplates, setAvailableTemplates] = useState<DynamicTemplate[]>([]);
 
   const [data, setData] = useState<EvolutionEvent | null>(null);
   const [history, setHistory] = useState<EvolutionEvent[]>([]);
@@ -196,8 +198,9 @@ export default function Home() {
     fetch(`${GENETIC_ENGINE_URL}/api/scenarios/templates`)
       .then(res => res.json())
       .then((d: DynamicTemplate[]) => {
+        setAvailableTemplates(d);
         if (d.length > 0) {
-          setActiveTemplate(d[0]);
+          setActiveTemplate(d[1] || d[0]);
           // No auto-execute, wait for user
         }
       })
@@ -621,7 +624,8 @@ export default function Home() {
       const res = await fetch(`${GENETIC_ENGINE_URL}/api/scenarios/templates`);
       const d = await res.json();
       if (d.length > 0) {
-        setActiveTemplate(d[0]);
+        setAvailableTemplates(d);
+        setActiveTemplate(d[1] || d[0]);
       }
 
       setCache({});
@@ -734,6 +738,29 @@ export default function Home() {
                 <h1 className="text-lg font-bold text-slate-800 leading-tight">Itzamná: Entornos Dinámicos</h1>
                 <p className="text-xs text-slate-500">Gobernanza Agnóstica · Generación {data ? data.generation : 0}</p>
               </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-slate-600">Entorno:</span>
+              <select 
+                className="bg-white border border-slate-300 text-slate-700 text-xs py-1 px-2 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                value={activeTemplate?.template_id || ''}
+                onChange={(e) => {
+                  const t = availableTemplates.find(x => x.template_id === e.target.value);
+                  if (t) {
+                    setActiveTemplate(t);
+                    setCache({});
+                    setFocusPathState([]);
+                    focusPathRef.current = [];
+                    setData(null);
+                    setHistory([]);
+                  }
+                }}
+              >
+                {availableTemplates.map(t => (
+                  <option key={t.template_id} value={t.template_id}>{t.name}</option>
+                ))}
+              </select>
             </div>
 
             <div className="flex-1 min-w-[220px] max-w-md">
@@ -881,6 +908,7 @@ export default function Home() {
                 focusPath={focusPath}
                 configuredPaths={Object.keys(cache)}
               />
+              <ExternalCrisisObserver template={activeTemplate} onChange={handleTemplateChange} />
             </div>
 
             <aside className="min-w-0 space-y-4 lg:col-span-4" aria-label="Controles de configuración">

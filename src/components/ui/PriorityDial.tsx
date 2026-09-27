@@ -31,14 +31,14 @@ export function PriorityDial({ value, onChange, size, color = '#6366f1', disable
     onChange(pct);
   };
 
-  const handlePointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
+  const handlePointerDown = (e: React.PointerEvent<SVGCircleElement>) => {
     if (disabled) return;
     e.stopPropagation();
     e.currentTarget.setPointerCapture(e.pointerId);
     updateValue(e);
   };
 
-  const handlePointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
+  const handlePointerMove = (e: React.PointerEvent<SVGCircleElement>) => {
     if (disabled) return;
     if (e.buttons === 1) {
       e.stopPropagation();
@@ -46,12 +46,12 @@ export function PriorityDial({ value, onChange, size, color = '#6366f1', disable
     }
   };
 
-  const handlePointerUp = (e: React.PointerEvent<SVGSVGElement>) => {
+  const handlePointerUp = (e: React.PointerEvent<SVGCircleElement>) => {
     if (disabled) return;
     e.stopPropagation();
     try {
       e.currentTarget.releasePointerCapture(e.pointerId);
-    } catch(err) {}
+    } catch { }
   };
 
   return (

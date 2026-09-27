@@ -31,19 +31,19 @@ def validate_dependency_graph(template: DynamicTemplate) -> None:
         for resource_name in consumer.requirements:
             if resource_name not in template.resources:
                 raise DependencyValidationError(
-                    f"El nodo {path} consume el recurso inexistente {resource_name}.",
+                    f"El nodo {path.replace('_', ' ').title()} consume el recurso inexistente {resource_name.replace('_', ' ').title()}.",
                     "unknown_input_resource",
                 )
 
         for resource_name in consumer.outputs:
             if resource_name not in template.resources:
                 raise DependencyValidationError(
-                    f"El nodo {path} produce el recurso inexistente {resource_name}.",
+                    f"El nodo {path.replace('_', ' ').title()} produce el recurso inexistente {resource_name.replace('_', ' ').title()}.",
                     "unknown_output_resource",
                 )
             if resource_name not in template.benefit_values:
                 raise DependencyValidationError(
-                    f"El output {resource_name} del nodo {path} no tiene una valoración definida.",
+                    f"El output {resource_name.replace('_', ' ').title()} del nodo {path.replace('_', ' ').title()} no tiene una valoración definida.",
                     "missing_benefit_value",
                 )
             producers[resource_name].append(path)
@@ -51,18 +51,18 @@ def validate_dependency_graph(template: DynamicTemplate) -> None:
     for resource_name in template.benefit_values:
         if resource_name not in template.resources:
             raise DependencyValidationError(
-                f"La valoración referencia el recurso inexistente {resource_name}.",
+                f"La valoración referencia el recurso inexistente {resource_name.replace('_', ' ').title()}.",
                 "unknown_benefit_resource",
             )
         benefit = template.benefit_values[resource_name]
         if benefit.minimum_reserve > template.resources[resource_name].value:
             raise DependencyValidationError(
-                f"La reserva mínima de {resource_name} supera el inventario inicial.",
+                f"La reserva mínima de {resource_name.replace('_', ' ').title()} supera el inventario inicial.",
                 "invalid_reserve",
             )
         if benefit.storage_capacity is not None and benefit.storage_capacity < benefit.minimum_reserve:
             raise DependencyValidationError(
-                f"La capacidad de almacenamiento de {resource_name} es menor que su reserva mínima.",
+                f"La capacidad de almacenamiento de {resource_name.replace('_', ' ').title()} es menor que su reserva mínima.",
                 "invalid_reserve",
             )
 
